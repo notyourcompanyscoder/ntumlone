@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 using std::vector;
 using std::cin;
 using std::cout;
@@ -26,7 +27,7 @@ typedef vector<TrainElem> TrainElemAry;
 class Pla
 {
 public:
-    Pla();
+    Pla(double p_eta = 1.0);
     int train(const TrainElemAry&); ///< @return Number of updates happened
     void dumpModel(ostream&) const;
 private:
@@ -34,9 +35,10 @@ private:
     bool isCorrect(const TrainElem&) const;
     int getWX(const TrainElem&) const;
     double w[DIMENSION+1];
+    double eta;
 };
 
-Pla::Pla()
+Pla::Pla(double p_eta) : eta(p_eta)
 {
     for(int i = 0; i < DIMENSION; ++i)
         w[i] = 0.0;
@@ -55,9 +57,9 @@ int Pla::train(const TrainElemAry& in)
                 continue;
             ++nError;
             ++nUpdate;
-            w[0] += i->y;
+            w[0] += eta * i->y;
             for(int j = 0; j < DIMENSION; ++j)
-                w[j+1] += (i->y * i->x[j]);
+                w[j+1] += (eta * i->y * i->x[j]);
         }
     } while(nError);
     return nUpdate;
@@ -83,11 +85,17 @@ int Pla::getWX(const TrainElem& in) const
     return sign(val);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
     double x[DIMENSION];
     int y;
     TrainElemAry trainData;
+    double eta = 1.0;
+    if (argc > 1)
+    {
+        std::istringstream strm(argv[1]);
+        strm >> eta;
+    }
     while(cin >> x[0])
     {
         for(int i = 1; i < DIMENSION; ++i)
@@ -99,7 +107,7 @@ int main(void)
     int totalUpdate = 0;
     for(int i = 0; i < 2000; ++i)
     {
-        Pla learner;
+        Pla learner(eta);
         std::random_shuffle(trainData.begin(), trainData.end());
         int nUpdate = learner.train(trainData);
         cout << nUpdate << " updates required to get model:\n";
