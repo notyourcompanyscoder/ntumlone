@@ -54,6 +54,7 @@ int Pla::train(const TrainElemAry& in)
                 continue;
             ++nError;
             ++nUpdate;
+            w[0] += i->y;
             for(int j = 0; j < DIMENSION; ++j)
                 w[j+1] += (i->y * i->x[j]);
         }
